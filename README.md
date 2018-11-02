@@ -408,3 +408,61 @@ represses PPARG expression and adipogenesis”. In: _EMBO Journal_ 32.1 (2013), 
 45-59. ISSN: 02614189. DOI: 10.1038/emboj.2012.306.
 
 ## 3. The pre-processing and the processing of the raw data
+
+The scripts to download and process the raw data are located in `scripts/` and are glued together to run sequentially by the GNU make file `Makefile`. The following is basically a description of the recipies in the `Makefile` with emphasis on the software versions, options, inputs and outputs.
+
+### 3.1 `download_fastq`
+
+* Program: `wget` (1.18)
+* Input: `run.csv`, the URLs column
+* Output: `*.fastq.gz`
+* Options: `-N`
+
+### 3.2 `get_annotation`
+* Program: `wget` (1.18)
+* Input: URL for mm10 gene annotation file
+* Output: `annotation.gtf`
+* Options: `-N`
+
+### 3.3 `make_index`
+
+* Program: `bowtie2-build` (2.3.0)
+* Input: URL for mm10 mouse genome fasta files
+* Output: `*.bt2` bowtie2 index for the mouse genome
+* Options: defaults
+
+### 3.4 `align_reads`
+
+* Program: `bowtie2` (2.3.0)
+* Input: `*.fastq.gz` and `mm10/` bowtie2 index for the mouse genome
+* Output: `*.sam`
+* Options: `--no-unal`
+
+### 3.5 `sam_to_bam`
+
+* Program: `samtools view` (1.3.1)
+* Input: `*.sam`
+* Output: `*.bam`
+* Options: `-Sb`
+
+### 3.6 `bam_sort_index`
+
+* Program: `samtools sort` and `samtools index` (1.3.1)
+* Input: `*.bam`
+* Output: `*.bam` and `*.bai`
+* Option: defaults
+
+### 3.7 `count_features`
+
+* Program: `featureCounts` (1.5.1)
+* Input: `*.bam` and the annotation `gtf` file for the mm10 mouse genome.
+* Output: `*.txt`
+* Option: defaults
+
+### 3.8 `fastqc`
+
+* Program: `fastqc` (0.11.5)
+* Input: `*.fastq.gz`, `*.sam` and `*.bam`
+* Output: `*_fastqc.zip`
+* Option: defaults
+
